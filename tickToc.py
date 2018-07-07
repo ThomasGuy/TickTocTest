@@ -1,8 +1,13 @@
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from .tickToc_db import Base
 from .tickToc_db import DB_Tables as Tables
 from .get_DF_Tables import _get_DF_Tables, _crossover, plotDataset, get_DataFrame
 
 from datetime import timedelta
 
+db_name = f'sqlite:///c:\\data\\sqlite\\db\\tickToc15m.db'
 
 def plot(coin, session, DB_Tables=Tables, title='A TickToc Plot', **kwargs):
 	"""plot coin with buy sell points"""
@@ -27,6 +32,14 @@ def df_cross_pair(coin, session, DB_Tables=Tables, **kwargs):
 	cross = _crossover(dataset)
 	return (dataset, cross)
 
+
 def dbTables():
 	"""Returns all the tictoc DB Tables"""
 	return Tables
+
+
+def db_session():
+	engine = create_engine(db_name, echo=False)
+	Base.metadata.create_all(engine)
+	session_factory = sessionmaker(bind=engine)
+	return session_factory()

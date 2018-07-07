@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 # Third party imports
-from sqlalchemy import Table, Column, DateTime, Float, Integer, String
+from sqlalchemy import Table, Column, DateTime, Float, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
 Base = declarative_base()
@@ -173,8 +173,6 @@ class Steem(MyMixin, Base):
 
 class Mana(MyMixin, Base):
     pass
-
-
 
 
 CryptoCompare_DB_Tables = {
