@@ -2,12 +2,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from .tickToc_db import Base
-from .tickToc_db import DB_Tables as Tables
+from .tickToc_db import all_DB_tables
 from .get_DF_Tables import _get_DF_Tables, _crossover, plotDataset, get_DataFrame
 
 from datetime import timedelta
 
-db_name = f'sqlite:///c:\\data\\sqlite\\db\\tickToc15m.db'
+Tables = all_DB_tables()
+db_name = 'sqlite:///c:\\data\\sqlite\\db\\tickToc15m.db'
 
 def plot(coin, session, DB_Tables=Tables, title='A TickToc Plot', **kwargs):
 	"""plot coin with buy sell points"""
@@ -38,7 +39,8 @@ def dbTables():
 	return Tables
 
 
-def db_session():
+def db_session(db_name=db_name):
+	"""Returns the session"""
 	engine = create_engine(db_name, echo=False)
 	Base.metadata.create_all(engine)
 	session_factory = sessionmaker(bind=engine)
