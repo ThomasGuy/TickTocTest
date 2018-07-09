@@ -1,6 +1,13 @@
 import pandas as pd
+import logging
 import matplotlib.pyplot as plt
 from .tickToc_db import getTable
+
+log = logging.getLogger(__name__)
+
+
+class Empty_Table(Exception):
+    pass
 
 
 def get_DataFrame(coin, session, resample='6H', sma=10, bma=27, lma=74, **kwargs):
@@ -26,23 +33,31 @@ def _get_DF_Tables(session, DB_Tables, resample='6H', sma=10, bma=27, lma=74, **
 	time i.e. the right of the sample frequency interval. Add in the moving averages
 	"""
 	DF_Tables = {}
-	for i, table in DB_Tables.items():
-		data = session.query(table.MTS, table.Open, table.Close,
-							table.High, table.Low).all()
-		df = pd.DataFrame([[item for item in tpl] for tpl in data],
-						columns=('MTS', 'Open', 'Close', 'High', 'Low'))
-		latest_timestamp = df['MTS'].max()
-		base = latest_timestamp.hour + latest_timestamp.minute/60.0
-		df.set_index('MTS', drop=True, inplace=True)
-		df.drop_duplicates()
-		df = df.groupby('MTS')['Open', 'Close', 'High', 'Low'].mean()
-		df = df.resample(rule=resample, closed='right', label='right', base=base).agg(
-			{'Open': 'first', 'Close': 'last', 'High': 'max', 'Low': 'min'})
-		df['sewma'] = df['Close'].ewm(span=sma).mean()
-		df['bewma'] = df['Close'].ewm(span=bma).mean()
-		df['longewma'] = df['Close'].ewm(span=lma).mean()
-		DF_Tables[i] = df
-
+	try:
+		for i, table in DB_Tables.items():
+			data = session.query(table.MTS, table.Open, table.Close,
+								table.High, table.Low).all()
+			df = pd.DataFrame([[item for item in tpl] for tpl in data],
+							columns=('MTS', 'Open', 'Close', 'High', 'Low'))
+			latest_timestamp = df['MTS'].max()
+			base = latest_timestamp.hour + latest_timestamp.minute/60.0
+			df.set_index('MTS', drop=True, inplace=True)
+			df.drop_duplicates()
+			df = df.groupby('MTS')['Open', 'Close', 'High', 'Low'].mean()
+			df = df.resample(rule=resample, closed='right', label='right', base=base).agg(
+				{'Open': 'first', 'Close': 'last', 'High': 'max', 'Low': 'min'})
+			df['sewma'] = df['Close'].ewm(span=sma).mean()
+			df['bewma'] = df['Close'].ewm(span=bma).mean()
+			df['longewma'] = df['Close'].ewm(span=lma).mean()
+			DF_Tables[i] = df
+	except AttributeError:
+		log.error(f'{i} in {table} ', exc_info=True)
+	except Empty_Table as err:
+		log.error(
+			f'Empty Table {i} in {table} errors: {err.args}', exc_info=True)
+		raise Empty_Table
+	except Exception as err:
+		raise(err)
 	return DF_Tables
 
 

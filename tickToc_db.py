@@ -1,5 +1,6 @@
 from collections import namedtuple
 from datetime import datetime
+import logging
 
 
 # Third party imports
@@ -9,6 +10,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
+log = logging.getLogger(__name__)
 Base = declarative_base()
 
 
