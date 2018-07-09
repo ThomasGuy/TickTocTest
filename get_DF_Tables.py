@@ -1,6 +1,8 @@
 import pandas as pd
 import logging
 import matplotlib.pyplot as plt
+import warnings
+
 from .tickToc_db import getTable
 
 log = logging.getLogger(__name__)
@@ -72,17 +74,19 @@ def _crossover(dataset):
 	else:
 		record.append([dataset.index[4], dataset['Close'].iloc[4], 'Sell'])
 
-	for date, row in dataset.iterrows():
-		if Higher:
-			# Sell condition
-			if row['sewma'] / row['bewma'] < 1:
-				record.append([date, row['Close'], 'Sell'])
-				Higher = not Higher
-		else:
-			# Buy condition
-			if row['sewma'] / row['bewma'] > 1:
-				record.append([date, row['Close'], 'Buy'])
-				Higher = not Higher
+	with warnings.catch_warnings():
+		warnings.simplefilter("ignore", category=RuntimeWarning)
+		for date, row in dataset.iterrows():
+			if Higher:
+				# Sell condition
+				if row['sewma'] / row['bewma'] < 1:
+					record.append([date, row['Close'], 'Sell'])
+					Higher = not Higher
+			else:
+				# Buy condition
+				if row['sewma'] / row['bewma'] > 1:
+					record.append([date, row['Close'], 'Buy'])
+					Higher = not Higher
 
 	cross = pd.DataFrame(record, columns=('Date Close Transaction').split())
 	cross.set_index('Date', drop=True, inplace=True)
