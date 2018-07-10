@@ -3,7 +3,7 @@ import logging
 import matplotlib.pyplot as plt
 import warnings
 
-from .tickToc_db import getTable
+from .models import getTable
 
 log = logging.getLogger(__name__)
 

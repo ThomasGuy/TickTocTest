@@ -1,4 +1,4 @@
-from .tickToc_db import table
+# from .models import table
 
 import sys
 import os

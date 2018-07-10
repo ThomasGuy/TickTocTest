@@ -1,20 +1,26 @@
+from __future__ import print_function
 from collections import namedtuple
 from datetime import datetime
 import logging
-
 
 # Third party imports
 from sqlalchemy import Table, Column, DateTime, Float, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy_mixins import AllFeaturesMixin
 
 
 log = logging.getLogger(__name__)
 Base = declarative_base()
 
 
-class User(UserMixin, Base):
+class BaseModel(Base, AllFeaturesMixin):
+    __abstract__ = True
+    pass
+
+
+class User(UserMixin, BaseModel):
     __tablename__ = 'users'
 
     id = Column(Integer(), primary_key=True)
@@ -33,7 +39,7 @@ class User(UserMixin, Base):
         return check_password_hash(self.password_hash, password)
 
 
-class Profile(Base):
+class Profile(BaseModel):
     __tablename__ = 'profiles'
 
     profile_id = Column(Integer, primary_key=True)
@@ -64,137 +70,139 @@ class MyMixin(object):
 	Volume = Column(Float(), nullable=False)
 
 	def __repr__(self):
-		return "<%s (MTS='%s', Open='%f', Close='%f')>" % \
-		(self.__tablename__, self.MTS, self.Open, self.Close)
+		return f"{self.__tablename__} <MTS={self.MTS},  Close={self.Close}>"
 
 
-class Avt(MyMixin, Base):
+class Avt(MyMixin, BaseModel):
     pass
 
-class Bch(MyMixin, Base):
+class Bch(MyMixin, BaseModel):
     pass
 
-class Btc(MyMixin, Base):
+class Btc(MyMixin, BaseModel):
     pass
 
-class Btg(MyMixin, Base):
+class Btg(MyMixin, BaseModel):
     pass
 
-class Dsh(MyMixin, Base):
+class Dsh(MyMixin, BaseModel):
     pass
 
-class Eos(MyMixin, Base):
+class Eos(MyMixin, BaseModel):
     pass
 
-class Etc(MyMixin, Base):
+class Etc(MyMixin, BaseModel):
     pass
 
-class Eth(MyMixin, Base):
+class Eth(MyMixin, BaseModel):
     pass
 
-class Fun(MyMixin, Base):
+class Fun(MyMixin, BaseModel):
     pass
 
-class Gnt(MyMixin, Base):
+class Gnt(MyMixin, BaseModel):
     pass
 
-class Iot(MyMixin, Base):
+class Iot(MyMixin, BaseModel):
     pass
 
-class Ltc(MyMixin, Base):
+class Ltc(MyMixin, BaseModel):
     pass
 
-class Neo(MyMixin, Base):
+class Neo(MyMixin, BaseModel):
     pass
 
-class Qsh(MyMixin, Base):
+class Qsh(MyMixin, BaseModel):
     pass
 
-class Qtm(MyMixin, Base):
+class Qtm(MyMixin, BaseModel):
     pass
 
-class Omg(MyMixin, Base):
+class Omg(MyMixin, BaseModel):
     pass
 
-class Rcn(MyMixin, Base):
+class Rcn(MyMixin, BaseModel):
     pass
 
-class Rlc(MyMixin, Base):
+class Rlc(MyMixin, BaseModel):
     pass
 
-class San(MyMixin, Base):
+class San(MyMixin, BaseModel):
     pass
 
-class Spk(MyMixin, Base):
+class Spk(MyMixin, BaseModel):
     pass
 
-class Trx(MyMixin, Base):
+class Trx(MyMixin, BaseModel):
     pass
 
-class Xlm(MyMixin, Base):
+class Xlm(MyMixin, BaseModel):
     pass
 
-class Xmr(MyMixin, Base):
+class Xmr(MyMixin, BaseModel):
     pass
 
-class Ada(MyMixin, Base):
+class Ada(MyMixin, BaseModel):
     pass
 
-class Xvg(MyMixin, Base):
+class Xvg(MyMixin, BaseModel):
     pass
 
-class Xem(MyMixin, Base):
+class Xem(MyMixin, BaseModel):
     pass
 
-class Ven(MyMixin, Base):
+class Ven(MyMixin, BaseModel):
     pass
 
-class Bnb(MyMixin, Base):
+class Bnb(MyMixin, BaseModel):
     pass
 
-class Bcn(MyMixin, Base):
+class Bcn(MyMixin, BaseModel):
     pass
 
-class Icx(MyMixin, Base):
+class Icx(MyMixin, BaseModel):
     pass
 
-class Lsk(MyMixin, Base):
+class Lsk(MyMixin, BaseModel):
     pass
 
-class Zil(MyMixin, Base):
+class Zil(MyMixin, BaseModel):
     pass
 
-class Ont(MyMixin, Base):
+class Ont(MyMixin, BaseModel):
     pass
 
-class Ae(MyMixin, Base):
+class Ae(MyMixin, BaseModel):
     pass
 
-class Zrx(MyMixin, Base):
+class Zrx(MyMixin, BaseModel):
     pass
 
-class Dcr(MyMixin, Base):
+class Dcr(MyMixin, BaseModel):
     pass
 
-class Nano(MyMixin, Base):
+class Nano(MyMixin, BaseModel):
     pass
 
-class Waves(MyMixin, Base):
+class Waves(MyMixin, BaseModel):
     pass
 
-class Xrp(MyMixin, Base):
+class Xrp(MyMixin, BaseModel):
     pass
 
-class Zec(MyMixin, Base):
+class Zec(MyMixin, BaseModel):
     pass
 
-class Elf(MyMixin, Base):
+class Elf(MyMixin, BaseModel):
     pass
 
-class Steem(MyMixin, Base):
+class Steem(MyMixin, BaseModel):
     pass
 
-class Mana(MyMixin, Base):
+class Mana(MyMixin, BaseModel):
+    pass
+
+class Edo(MyMixin, BaseModel):
     pass
 
 
@@ -244,7 +252,8 @@ DB_Tables = {
     'xlm': Xlm,
     'xmr': Xmr,
     'xrp': Xrp,
-    'zec': Zec
+    'zec': Zec,
+    'edo': Edo
 }
 
 
@@ -257,4 +266,4 @@ def getTable(coin):
 
 
 # weird code makes dict into an object
-table = namedtuple('DB_Tables', all_DB_tables().keys())(**all_DB_tables())
+# table = namedtuple('DB_Tables', all_DB_tables().keys())(**all_DB_tables())

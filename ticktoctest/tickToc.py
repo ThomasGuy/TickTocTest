@@ -1,8 +1,8 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+import sqlalchemy as sa
+from sqlalchemy.orm import sessionmaker, scoped_session
 
-from .tickToc_db import Base
-from .tickToc_db import all_DB_tables
+from .models import Base, BaseModel
+from .models import all_DB_tables
 from .get_DF_Tables import _get_DF_Tables, _crossover, plotDataset, get_DataFrame
 
 from datetime import timedelta
@@ -41,7 +41,8 @@ def dbTables():
 
 def db_session(db_name=db_name):
 	"""Returns the session"""
-	engine = create_engine(db_name, echo=False)
+	engine = sa.create_engine(db_name, echo=False)
+	session = scoped_session(sessionmaker(bind=engine))
 	Base.metadata.create_all(engine)
-	session_factory = sessionmaker(bind=engine)
-	return session_factory()
+	BaseModel.set_session(session)
+	return session
