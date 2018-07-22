@@ -47,7 +47,7 @@ def _get_DF_Tables(session, DB_Tables, resample='6H', sma=10, bma=27, lma=74, **
 	"""
 	DF_Tables = {}
 	for coin in DB_Tables.keys():
-		resampledData, df = get_DataFrame(coin, session, resample, sma, bma, lma)
+		resampledData, df = get_DataFrame(coin, session, , resample='6H', sma=10, bma=27, lma=74)
 		DF_Tables[coin] = (resampledData, df)
 
 	return DF_Tables
