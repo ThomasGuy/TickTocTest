@@ -8,7 +8,7 @@ from .get_DF_Tables import _get_DF_Tables, _crossover, plotDataset, get_DataFram
 from datetime import timedelta
 
 Tables = all_DB_tables()
-db_name = 'sqlite:///c:\\data\\sqlite\\db\\tickToc15m.db'
+db_name = 'tickToc15m'
 
 
 def plot(coin, session, start=None, finish=None, title='', **kwargs):
@@ -47,8 +47,15 @@ def dfTable(coin, session):
 
 def db_session(db_name=db_name):
 	"""Returns the session"""
-	engine = sa.create_engine(db_name, echo=False)
+	_db = f'sqlite:///c:\\data\\sqlite\\db\\{db_name}.db'
+	engine = sa.create_engine(_db, echo=False)
 	session = scoped_session(sessionmaker(bind=engine))
 	Base.metadata.create_all(engine)
 	BaseModel.set_session(session)
 	return session
+
+
+# def switchToTimestamp():
+# 	session = db_session()
+# 	for table in Tables.values():
+# 		data = session.query(table).all()

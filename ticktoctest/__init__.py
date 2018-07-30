@@ -33,3 +33,4 @@ console.setFormatter(formatter)
 
 # add the handler to the root logger
 logging.getLogger(__name__).addHandler(console)
+import lore
