@@ -13,6 +13,9 @@ class Empty_Table(Exception):
 
 
 def get_DataFrame(coin, session, resample='6H', sma=10, bma=27, lma=74, **kwargs):
+    """
+    Return resampled datafram and oringinal data
+    """
     try:
         db_ = getTable(coin)
         data = session.query(db_.MTS, db_.Open, db_.Close, db_.High, db_.Low).all()
@@ -106,7 +109,7 @@ def plotDataset(dataset, record, df, title):
     axes.set_xlabel('Date')
     axes.grid(color='b', alpha=0.5, linestyle='--', linewidth=0.5)
     axes.grid(True)
-    axes.set_title(title)
+    axes.set_title(title + f"  Latest price: ${df['Close'].iloc[-1]}", fontsize=15)
     # axes.set_xticks()
     plt.legend()
     plt.show()

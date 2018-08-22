@@ -2,7 +2,7 @@ import sys
 import os
 import logging
 import logging.config
-# import lore
+
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 package_dir = os.path.realpath(os.path.join(current_dir, os.pardir))
