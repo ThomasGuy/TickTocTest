@@ -303,7 +303,3 @@ def all_DB_tables():
 
 def getTable(coin):
     return all_DB_tables()[coin]
-
-
-# weird code makes dict into an object
-# table = namedtuple('DB_Tables', all_DB_tables().keys())(**all_DB_tables())

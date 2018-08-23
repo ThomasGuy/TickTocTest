@@ -18,19 +18,19 @@ def get_DataFrame(coin, session, resample='6H', sma=10, bma=27, lma=74, **kwargs
     """
     try:
         db_ = getTable(coin)
-        data = session.query(db_.MTS, db_.Open, db_.Close, db_.High, db_.Low).all()
+        data = session.query(db_.MTS, db_.Open, db_.Close, db_.High, db_.Low, db_.Volume).all()
         if data == []:
             raise Empty_Table
         df = pd.DataFrame([[item for item in tpl] for tpl in data],
-                          columns=('MTS', 'Open', 'Close', 'High', 'Low'))
+                          columns=('MTS', 'Open', 'Close', 'High', 'Low', 'Volume'))
         latest_timestamp = df['MTS'].max()
         df.set_index('MTS', drop=True, inplace=True)
         base = latest_timestamp.hour + latest_timestamp.minute / 60.0
         if not df.index.is_unique:
             df.drop_duplicates()
-            df = df.groupby('MTS')['Open', 'Close', 'High', 'Low'].mean()
+            df = df.groupby('MTS')['Open', 'Close', 'High', 'Low', 'Volume'].mean()
         resampledData = df.resample(rule=resample, closed='right', label='right', base=base).agg(
-            {'Open': 'first', 'Close': 'last', 'High': 'max', 'Low': 'min'})
+            {'Open': 'first', 'Close': 'last', 'High': 'max', 'Low': 'min', 'Volume': 'sum'})
         resampledData['sewma'] = resampledData['Close'].ewm(span=sma).mean()
         resampledData['bewma'] = resampledData['Close'].ewm(span=bma).mean()
         resampledData['longewma'] = resampledData['Close'].ewm(span=lma).mean()
@@ -109,7 +109,7 @@ def plotDataset(dataset, record, df, title):
     axes.set_xlabel('Date')
     axes.grid(color='b', alpha=0.5, linestyle='--', linewidth=0.5)
     axes.grid(True)
-    axes.set_title(title + f"  Latest price: ${df['Close'].iloc[-1]}", fontsize=15)
+    axes.set_title(title + " - Latest price: ${:.4f}".format(df['Close'].iloc[-1]), fontsize=15)
     # axes.set_xticks()
     plt.legend()
     plt.show()

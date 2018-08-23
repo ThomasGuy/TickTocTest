@@ -1,7 +1,8 @@
 import sqlalchemy as sa
+import pandas as pd
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-from .models import Base, BaseModel
+from .models import Base, BaseModel, getTable
 from .models import all_DB_tables
 from .get_DF_Tables import _get_DF_Tables, _crossover, plotDataset, get_DataFrame
 
@@ -22,6 +23,27 @@ def db_session(db_name=db_name):
     Base.metadata.create_all(engine)
     BaseModel.set_session(session)
     return session
+
+
+def getDBdata(coin, step):
+    """
+    Returns all the resampled data for that coin
+    """
+    session = db_session()
+    db_ = getTable(coin)
+    data = session.query(db_.MTS, db_.Open, db_.Close, db_.High, db_.Low, db_.Volume).all()
+    df = pd.DataFrame([[item for item in tpl] for tpl in data],
+                        columns=('MTS', 'Open', 'Close', 'High', 'Low', 'Volume'))
+    latest_timestamp = df['MTS'].max()
+    df.set_index('MTS', drop=True, inplace=True)
+    base = latest_timestamp.hour + latest_timestamp.minute / 60.0
+    df.drop_duplicates()
+    df = df.groupby('MTS')['Open', 'Close', 'High', 'Low', 'Volume'].mean()
+    resample = step.upper()
+    resampled = df.resample(rule=resample, closed='right', label='right', base=base).agg(
+        {'Open': 'first', 'Close': 'last', 'High': 'max', 'Low': 'min', 'Volume': 'mean'})
+    return resampled.rename({'Open': 'open', 'Close': 'close', 'High': 'high', 'Low': 'low',
+                            'Volume': 'volume'}, axis=1)
 
 
 def plot(coin, session=None, start=None, finish=None, title='', **kwargs):
@@ -82,7 +104,7 @@ def candles(coin, session=None, title=''):
     ax.xaxis.grid(True, 'major')
     ax.grid(True)
     ax.set_facecolor('lightgrey')
-    ax.set_title(title + f"  last price: ${df['Close'].iloc[-1]}", fontsize=15)
+    ax.set_title(title + "  last price: ${:.4f}".format(df['Close'].iloc[-1]), fontsize=15)
 
     candlestick_ohlc(ax, data_values, width=0.6, colorup='g', colordown='r')
 
