@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy_mixins import AllFeaturesMixin
 
 
-log = logging.getLogger(__name__)
+# log = logging.getLogger(__name__)
 Base = declarative_base()
 
 

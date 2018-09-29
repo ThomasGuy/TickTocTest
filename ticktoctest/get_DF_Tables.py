@@ -5,17 +5,25 @@ import warnings
 
 from .models import getTable
 
-log = logging.getLogger(__name__)
+# log = logging.getLogger(__name__)
 
 
 class Empty_Table(Exception):
     pass
 
 
-def get_DataFrame(coin, session, resample='6H', sma=10, bma=27, lma=74, **kwargs):
+def get_DataFrame(coin, session, **kwargs):
     """
     Return resampled datafram and oringinal data
     """
+    default_options = {
+        'sma': 10,
+        'bma': 27,
+        'lma': 74,
+        'resample': '6H'
+    }
+    opts = dict(default_options)
+    opts.update(kwargs)
     try:
         db_ = getTable(coin)
         data = session.query(db_.MTS, db_.Open, db_.Close, db_.High, db_.Low, db_.Volume).all()
@@ -29,28 +37,28 @@ def get_DataFrame(coin, session, resample='6H', sma=10, bma=27, lma=74, **kwargs
         if not df.index.is_unique:
             df.drop_duplicates()
             df = df.groupby('MTS')['Open', 'Close', 'High', 'Low', 'Volume'].mean()
-        resampledData = df.resample(rule=resample, closed='right', label='right', base=base).agg(
+        resampledData = df.resample(rule=opts['resample'], closed='right', label='right', base=base).agg(
             {'Open': 'first', 'Close': 'last', 'High': 'max', 'Low': 'min', 'Volume': 'sum'})
-        resampledData['sewma'] = resampledData['Close'].ewm(span=sma).mean()
-        resampledData['bewma'] = resampledData['Close'].ewm(span=bma).mean()
-        resampledData['longewma'] = resampledData['Close'].ewm(span=lma).mean()
+        resampledData['sewma'] = resampledData['Close'].ewm(span=opts['sma']).mean()
+        resampledData['bewma'] = resampledData['Close'].ewm(span=opts['bma']).mean()
+        resampledData['longewma'] = resampledData['Close'].ewm(span=opts['lma']).mean()
 
     except Empty_Table as err:
-        log.error(
-            f'Empty Table {coin} errors: {err.args}', exc_info=True)
+        # log.error(
+        #     f'Empty Table {coin} errors: {err.args}', exc_info=True)
         raise Empty_Table
     except Exception as err:
         raise(err)
     return (resampledData, df)
 
 
-def _get_DF_Tables(session, DB_Tables, resample='6H', sma=10, bma=27, lma=74, **kwargs):
+def _get_DF_Tables(session, DB_Tables, **kwargs):
     """Generate a DataFrame for each DB_Table, reasmple back from the present
     time i.e. the right of the sample frequency interval. Add in the moving averages
     """
     DF_Tables = {}
     for coin in DB_Tables.keys():
-        resampledData, df = get_DataFrame(coin, session, resample, sma, bma, lma)
+        resampledData, df = get_DataFrame(coin, session, **kwargs)
         DF_Tables[coin] = (resampledData, df)
 
     return DF_Tables
@@ -90,12 +98,9 @@ def plotDataset(dataset, record, df, title):
     fig = plt.figure(figsize=(16, 8))
     axes = fig.add_axes([0, 0, 1, 1])
     # plot dataset
-    axes.plot(dataset.index, dataset['sewma'],
-              label='ewma={}'.format(10), color='blue')
-    axes.plot(dataset.index, dataset['bewma'],
-              label='ewma={}'.format(27), color='red')
-    axes.plot(dataset.index, dataset['longewma'],
-              label=f'longma={74}', color='orange', alpha=.5)
+    axes.plot(dataset.index, dataset['sewma'], label='sma={}'.format(10), color='blue')
+    axes.plot(dataset.index, dataset['bewma'], label='bma={}'.format(27), color='red')
+    axes.plot(dataset.index, dataset['longewma'], label=f'longma={74}', color='orange', alpha=.5)
     axes.plot(df.index, df['Close'], label='close', color='green', alpha=.5)
     # axes.plot(df.index, df['High'], label='high', color='pink', alpha=.5)
 

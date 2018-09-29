@@ -25,11 +25,11 @@ def db_session(db_name=db_name):
     return session
 
 
-def getDBdata(coin, step):
+def getDBdata(coin, step, session=None):
     """
     Returns all the resampled data for that coin
     """
-    session = db_session()
+    session = session or db_session()
     db_ = getTable(coin)
     data = session.query(db_.MTS, db_.Open, db_.Close, db_.High, db_.Low, db_.Volume).all()
     df = pd.DataFrame([[item for item in tpl] for tpl in data],
@@ -52,20 +52,19 @@ def plot(coin, session=None, start=None, finish=None, title='', **kwargs):
     dataset, df = get_DataFrame(coin, session, **kwargs)
     # lop off the first week to let the ewma's get settled
     cross = _crossover(dataset)
-    # if start is None:
-    #     start = (dataset.index[0] + timedelta(7)).strftime('%Y-%m-%d')
+    if start is None:
+        start = (dataset.index[0] + timedelta(7)).strftime('%Y-%m-%d')
 
     plotDataset(dataset.loc[start:finish], cross.loc[start:finish], df.loc[start:finish], title)
 
 
-def dfTables(session, DB_Tables=Tables, **kwargs):
+def dfTables(session, DB_Tables=Tables):
     """Return all DF Tables"""
-    return _get_DF_Tables(session, DB_Tables, **kwargs)
+    return _get_DF_Tables(session, DB_Tables)
 
 
-def df_cross_pair(coin, session, DB_Tables=Tables, **kwargs):
+def df_cross_pair(coin, session, DB_Tables=Tables):
     """Return coin_df and cross_df"""
-    # DF_Tables = _get_DF_Tables(session, DB_Tables, **kwargs)
     dataset, df = get_DataFrame(coin, session)
     cross = _crossover(dataset)
     return (dataset, cross)
@@ -81,13 +80,19 @@ def dfTable(coin, session):
     return get_DataFrame(coin, session)
 
 
-def candles(coin, session=None, title=''):
-    sma = 4
-    bma = 7
-    lma = 19
+def candles(coin, period=30, session=None, title='', **kwargs):
+    opts = {
+        'resample': '1D',
+        'sma': 4,
+        'bma': 7,
+        'lma': 19
+    }
+    opts.update(kwargs)
     session = session or db_session()
-    dataset, df = get_DataFrame(coin, session, resample='1D', sma=sma, bma=bma, lma=lma)
-    start = (dataset.index[-1] - timedelta(90)).strftime('%Y-%m-%d')
+    title = title or coin.capitalize()
+    dataset, df = get_DataFrame(coin, session, resample=opts['resample'], sma=opts['sma'], bma=opts['bma'],
+                                lma=opts['lma'])
+    start = (dataset.index[-1] - timedelta(period)).strftime('%Y-%m-%d')
     data = dataset.loc[start:].copy().reset_index()
     data['date_ax'] = data['MTS'].apply(lambda date: date2num(date))
     data_values = [tuple(vals) for vals in data[['date_ax', 'Open', 'High', 'Low', 'Close']].values]
@@ -110,8 +115,8 @@ def candles(coin, session=None, title=''):
 
     # plt.setp(plt.gca().get_xticklabels(), rotation=45, horizontalalignment='right')
 
-    ax.plot(data.date_ax, data['sewma'], label='ewma={}'.format(sma), color='blue')
-    ax.plot(data.date_ax, data['bewma'], label='ewma={}'.format(bma), color='purple')
-    ax.plot(data.date_ax, data['longewma'], label=f'longma={lma}', color='orange', alpha=.5)
+    ax.plot(data.date_ax, data['sewma'], label='sma={}'.format(opts['sma']), color='blue')
+    ax.plot(data.date_ax, data['bewma'], label='bma={}'.format(opts['bma']), color='purple')
+    ax.plot(data.date_ax, data['longewma'], label='longma={}'.format(opts['lma']), color='orange', alpha=.5)
     plt.legend()
     plt.show()

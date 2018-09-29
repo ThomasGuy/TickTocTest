@@ -14,21 +14,21 @@ sys.path.insert(0, package_dir)
 # if os.path.isfile(package_dir + "/logs/timeMachine.log"):
 #     os.remove(package_dir + "/logs/timeMachine.log")
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    datefmt='%m-%d %H:%M',
-                    filename=package_dir + '/logs/ticktoctest.log',
-                    filemode='w')
+# logging.basicConfig(level=logging.DEBUG,
+#                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+#                     datefmt='%m-%d %H:%M',
+#                     filename=package_dir + '/logs/ticktoctest.log',
+#                     filemode='w')
 
-# define a Handler which writes INFO messages or higher to the sys.stderr
-console = logging.StreamHandler()
-console.setLevel(logging.ERROR)
-# # set a format which is simpler for console use
-formatter = logging.Formatter(
-    '%(asctime)s %(name)-12s: %(levelname)-8s %(message)s',
-    datefmt='%m-%d %H:%M')
-# # tell the handler to use this format
-console.setFormatter(formatter)
+# # define a Handler which writes INFO messages or higher to the sys.stderr
+# console = logging.StreamHandler()
+# console.setLevel(logging.ERROR)
+# # # set a format which is simpler for console use
+# formatter = logging.Formatter(
+#     '%(asctime)s %(name)-12s: %(levelname)-8s %(message)s',
+#     datefmt='%m-%d %H:%M')
+# # # tell the handler to use this format
+# console.setFormatter(formatter)
 
-# add the handler to the root logger
-logging.getLogger(__name__).addHandler(console)
+# # add the handler to the root logger
+# logging.getLogger(__name__).addHandler(console)
