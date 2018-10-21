@@ -55,7 +55,7 @@ class MyMixin(object):
     def __tablename__(cls):  # pylint: disable=E0213
         return cls.__name__.lower()
 
-    __table_args__ = {'mysql_engine': 'Sqlite'}
+    __table_args__ = {'mysql_engine': 'innoDB'}
     __mapper_args__ = {'always_refresh': True}
 
     id = Column(Integer(), primary_key=True)
@@ -246,7 +246,7 @@ class Edo(MyMixin, BaseModel):
     pass
 
 
-CryptoCompare_DB_Tables = {
+Compare_DB_Tables = {
     'avt': Avt,
     'ada': Ada,
     'xvg': Xvg,
@@ -270,7 +270,7 @@ CryptoCompare_DB_Tables = {
     'mana': Mana
 }
 
-DB_Tables = {
+Bitfinex_DB_Tables = {
     'bch': Bch,
     'btc': Btc,
     'btg': Btg,
@@ -298,7 +298,7 @@ DB_Tables = {
 
 
 def all_DB_tables():
-    return {**CryptoCompare_DB_Tables, **DB_Tables}
+    return {**Compare_DB_Tables, **Bitfinex_DB_Tables}
 
 
 def getTable(coin):
