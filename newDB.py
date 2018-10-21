@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 def main():
-    tickToc = Populate(Bitfinex_DB_Tables, Compare_DB_Tables)
+    tickToc = Populate(Bitfinex_DB_Tables, Compare_DB_Tables, '6h')
     tickToc.getin(Session, 'Database Created')
 
 
