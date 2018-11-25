@@ -29,8 +29,7 @@ def get_DataFrame(coin, session, **kwargs):
         data = session.query(db_.MTS, db_.Open, db_.Close, db_.High, db_.Low, db_.Volume).all()
         if data == []:
             raise Empty_Table
-        df = pd.DataFrame([[item for item in tpl] for tpl in data],
-                          columns=('MTS', 'Open', 'Close', 'High', 'Low', 'Volume'))
+        df = pd.DataFrame(data)
         latest_timestamp = df['MTS'].max()
         df.set_index('MTS', drop=True, inplace=True)
         base = latest_timestamp.hour + latest_timestamp.minute / 60.0
@@ -40,8 +39,8 @@ def get_DataFrame(coin, session, **kwargs):
         resampledData = df.resample(rule=opts['resample'], closed='right', label='right', base=base).agg(
             {'Open': 'first', 'Close': 'last', 'High': 'max', 'Low': 'min', 'Volume': 'sum'})
         resampledData['sewma'] = resampledData['Close'].ewm(span=opts['sma']).mean()
-        resampledData['bewma'] = resampledData['Close'].ewm(span=opts['bma']).mean()
-        resampledData['longewma'] = resampledData['Close'].ewm(span=opts['lma']).mean()
+        resampledData['bma'] = resampledData['Close'].rolling(span=opts['bma']).mean()
+        resampledData['lma'] = resampledData['Close'].rolling(span=opts['lma']).mean()
 
     except Empty_Table as err:
         # log.error(
@@ -49,7 +48,7 @@ def get_DataFrame(coin, session, **kwargs):
         raise Empty_Table
     except Exception as err:
         raise(err)
-    return (resampledData, df)
+    return (resampledData.iloc[opts['bma']:], df)
 
 
 def _get_DF_Tables(session, DB_Tables, **kwargs):
@@ -68,7 +67,7 @@ def _crossover(dataset):
     """Record any crossing points of the moving averages"""
     record = []
     # use 5th db record as 1st has equal SEWMA = BEWMA
-    Higher = dataset.iloc[4]['sewma'] > dataset.iloc[4]['bewma']
+    Higher = dataset.iloc[4]['sewma'] > dataset.iloc[4]['bma']
     # Initialize record ensures record is never empty
     if Higher:
         record.append([dataset.index[4], dataset['Close'].iloc[4], 'Buy'])
@@ -80,12 +79,12 @@ def _crossover(dataset):
         for date, row in dataset.iterrows():
             if Higher:
                 # Sell condition
-                if row['sewma'] / row['bewma'] < 1:
+                if row['sewma'] / row['bma'] < 1:
                     record.append([date, row['Close'], 'Sell'])
                     Higher = not Higher
             else:
                 # Buy condition
-                if row['sewma'] / row['bewma'] > 1:
+                if row['sewma'] / row['bma'] > 1:
                     record.append([date, row['Close'], 'Buy'])
                     Higher = not Higher
 

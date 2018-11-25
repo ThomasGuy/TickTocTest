@@ -67,10 +67,15 @@ class MyMixin(object):
     Volume = Column(Float(), nullable=False)
 
     def __repr__(self):
-        return f"{self.__tablename__} <MTS={self.MTS},  Close={self.Close}>"
+        return f"{self.__tablename__} <MTS={self.MTS}, Open={self.Open}, Close={self.Close}, High={self.High}, \
+Low={self.Low}, Volume={self.Volume}>"
 
 
 class Avt(MyMixin, BaseModel):
+    pass
+
+
+class Bab(MyMixin, Base):
     pass
 
 
@@ -272,6 +277,7 @@ Compare_DB_Tables = {
 
 Bitfinex_DB_Tables = {
     'bch': Bch,
+    'bab': Bab,
     'btc': Btc,
     'btg': Btg,
     'dsh': Dsh,

@@ -10,9 +10,9 @@ from sqlalchemy.orm import sessionmaker
 from .models import Base
 
 db_name = 'sqlite:///c:\\data\\sqlite\\db\\FreshTest.db'
-DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URL') or db_name
+DATABASE_URI = 'mysql+pymysql://TomRoot:Sporty66@mysql.stackcp.com:51228/ticktoctestDB-3637742e'
 
-engine = create_engine(DATABASE_URI, pool_recycle=3600, echo=False)
+engine = create_engine(DATABASE_URI, pool_recycle=3000, echo=False)
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
