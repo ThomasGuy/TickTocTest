@@ -10,7 +10,7 @@ from datetime import timedelta
 import matplotlib.pyplot as plt
 
 Tables = all_DB_tables()
-# db_name = 'mysql+pymysql://TomRoot:Sporty66@mysql.stackcp.com:53548/ticktoctestDB-3637742e'
+# db_name = 'mysql+pymysql://TomRoot:Sporty66@mysql.stackcp.com:51228/ticktoctestDB-3637742e'
 db_name = f'sqlite:///c:\\data\\sqlite\\db\\tickToc15m.db'
 
 
