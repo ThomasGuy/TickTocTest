@@ -1,8 +1,9 @@
 import sqlalchemy as sa
 import pandas as pd
 from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy import create_engine
 
-from .models import Base, BaseModel, getTable
+from .models import Base, getTable
 from .models import all_DB_tables
 from .get_DF_Tables import _get_DF_Tables, _crossover, plotDataset, get_DataFrame
 
@@ -11,23 +12,22 @@ import matplotlib.pyplot as plt
 
 Tables = all_DB_tables()
 # db_name = 'mysql+pymysql://TomRoot:Sporty66@mysql.stackcp.com:51228/ticktoctestDB-3637742e'
-db_name = f'sqlite:///c:\\data\\sqlite\\db\\tickToc15m.db'
+db_name = f'sqlite:///c:\\data\\sqlite\\db\\master_db.db'
 
 
 def db_session(db_name=db_name):
     """Returns the session"""
-    engine = sa.create_engine(db_name, pool_recycle=3500, echo=False)
-    session = scoped_session(sessionmaker(bind=engine))
+    engine = create_engine(db_name, pool_recycle=3000, echo=False)
+    Session = scoped_session(sessionmaker(bind=engine))
     Base.metadata.create_all(engine)
-    BaseModel.set_session(session)
-    return session
+    return Session
 
 
-def getDBdata(coin, step, session=None):
+def getDBdata(coin, step, session):
     """
     Returns all the resampled data for that coin
     """
-    session = session or db_session()
+    # session = session or db_session()
     db_ = getTable(coin)
     data = session.query(db_.MTS, db_.Open, db_.Close, db_.High, db_.Low, db_.Volume).all()
     df = pd.DataFrame(data)
@@ -37,8 +37,13 @@ def getDBdata(coin, step, session=None):
     df.drop_duplicates()
     df = df.groupby('MTS')['Open', 'Close', 'High', 'Low', 'Volume'].mean()
     resample_freq = step.upper()
-    return df.resample(rule=resample_freq, closed='right', label='right', base=base).agg(
-        {'Open': 'first', 'Close': 'last', 'High': 'max', 'Low': 'min', 'Volume': 'sum'})
+    return df.resample(rule=resample_freq, closed='right', label='right', base=base).agg({
+        'Open': 'first',
+        'Close': 'last',
+        'High': 'max',
+        'Low': 'min',
+        'Volume': 'sum'
+        })
 
 
 def dfTables(session, DB_Tables=Tables):
@@ -63,9 +68,15 @@ def dfTable(coin, session):
     return get_DataFrame(coin, session)
 
 
-def getDF(coin, db_name=db_name):
-    session = db_session(db_name)
+def getDF(coin, session):
     db_ = getTable(coin)
     data = session.query(db_.MTS, db_.Open, db_.Close, db_.High, db_.Low, db_.Volume).all()
     df = pd.DataFrame(data)
-    return df.drop_duplicates()
+    df.set_index('MTS', drop=True, inplace=True)
+    return df
+
+
+def rawDF(coin, session):
+    db_ = getTable(coin)
+    data = session.query(db_.MTS, db_.Open, db_.Close, db_.High, db_.Low, db_.Volume).all()
+    return pd.DataFrame(data)

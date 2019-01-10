@@ -1,52 +1,100 @@
-import logging
-
 # Third party imports
-from sqlalchemy import Table, Column, DateTime, Float, Integer, String, ForeignKey
+from sqlalchemy import Table, Column, DateTime, Float, String, Integer, ForeignKey
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from flask_login import UserMixin
+# from flask_sqlalchemy_session import current_session as cs
+# from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy_mixins import AllFeaturesMixin
 
-
-# log = logging.getLogger(__name__)
 Base = declarative_base()
 
 
-class BaseModel(Base, AllFeaturesMixin):
-    __abstract__ = True
-    pass
-
-
-class User(UserMixin, BaseModel):
+class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer(), primary_key=True)
-    username = Column(String(64), index=True, unique=True)
-    email = Column(String(120), index=True, unique=True)
+    username = Column(String(64), index=True, unique=True, nullable=False)
+    email = Column(String(120), index=True, unique=True, nullable=False)
     password_hash = Column(String(128))
-    # profile = relationship('Profile', backref='author', lazy='dynamic')
+
+    # 1 to 1 relationship with Portfolio
+    portfolio = relationship("Portfolio", cascade="all, delete, delete-orphan")
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+    # def set_password(self, password):
+    #     self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+    # def check_password(self, password):
+    #     return check_password_hash(self.password_hash, password)
 
 
-class Profile(BaseModel):
-    __tablename__ = 'profiles'
+class Portfolio(Base):
+    __tablename__ = 'portfolios'
 
-    profile_id = Column(Integer, primary_key=True)
-    body = Column(String(255))
-    user_id = Column(Integer(), ForeignKey('users.id'))
+    id = Column(Integer, primary_key=True)
+    sma = Column(Integer, nullable=False)
+    bma = Column(Integer, nullable=False)
+    lma = Column(Integer, nullable=False)
+    freq = Column(String(3), nullable=False)
 
-    # user = relationship("User", backref=backref('profiles', order_by=profile_id))
+    # 1 to 1 relationship with User
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user = relationship("User")
+    # 1 to many relationship with bank
+    bank = relationship("Bank", cascade="all, delete, delete-orphan")
+
+    def __init__(self, sma=20, bma=55, lma=140, freq='6h'):
+        self.sma = sma
+        self.bma = bma
+        self.lma = lma
+        self.freq = freq
 
     def __repr__(self):
-        return '<Profile {}>'.format(self.body)
+        return "<Portfolio (sma={}, bma={}, lma={}, freq={})>".format(self.sma, self.bma, self.lma, self.freq)
+
+    @hybrid_property
+    def my_portfolio(self):
+        return [(row.coin_id, row.amount) for row in self.bank]
+
+    @hybrid_method
+    def i_have(self, altcoin):
+        for row in self.bank:
+            if row.coin_id == altcoin:
+                return True
+        return False
+
+    @hybrid_method
+    def amount(self, altcoin):
+        for row in self.bank:
+            if row.coin_id == altcoin:
+                return row.amount
+
+
+class Bank(Base):
+    __tablename__ = 'banks'
+
+    amount = Column(Float, nullable=False)
+    # 1 to many from Portfolio
+    portfolio_id = Column(Integer, ForeignKey('portfolios.id'), primary_key=True)
+    # many to 1 to Coins
+    coin_id = Column(String(6), ForeignKey('coins.coin'), primary_key=True)
+    # relationship with Coin
+    altcoin = relationship("Coin", cascade="all, delete")
+
+    def __repr__(self):
+        return "<Bank (amount={}, Coin={})>".format(self.amount, self.coin_id)
+
+
+class Coin(Base):
+    __tablename__ = 'coins'
+
+    coin = Column(String(6), primary_key=True)
+    name = Column(String(40), nullable=False, unique=True)
+    rank = Column(Integer)
+    market_cap = Column(Float)
 
 
 class MyMixin(object):
@@ -68,10 +116,18 @@ class MyMixin(object):
 
     def __repr__(self):
         return f"{self.__tablename__} <MTS={self.MTS}, Open={self.Open}, Close={self.Close}, High={self.High}, \
-Low={self.Low}, Volume={self.Volume}>"
+                 Low={self.Low}, Volume={self.Volume}>"
 
 
-class Avt(MyMixin, BaseModel):
+class Ada(MyMixin, Base):
+    pass
+
+
+class Ae(MyMixin, Base):
+    pass
+
+
+class Avt(MyMixin, Base):
     pass
 
 
@@ -79,233 +135,258 @@ class Bab(MyMixin, Base):
     pass
 
 
-class Bch(MyMixin, BaseModel):
+class Bch(MyMixin, Base):
     pass
 
 
-class Btc(MyMixin, BaseModel):
+class Bchsv(MyMixin, Base):
     pass
 
 
-class Btg(MyMixin, BaseModel):
+class Bcn(MyMixin, Base):
     pass
 
 
-class Dsh(MyMixin, BaseModel):
+class Bnb(MyMixin, Base):
     pass
 
 
-class Eos(MyMixin, BaseModel):
+class Btc(MyMixin, Base):
     pass
 
 
-class Etc(MyMixin, BaseModel):
+class Btg(MyMixin, Base):
     pass
 
 
-class Eth(MyMixin, BaseModel):
+class Dcr(MyMixin, Base):
     pass
 
 
-class Fun(MyMixin, BaseModel):
+class Dsh(MyMixin, Base):
     pass
 
 
-class Gnt(MyMixin, BaseModel):
+class Edo(MyMixin, Base):
     pass
 
 
-class Iot(MyMixin, BaseModel):
+class Elf(MyMixin, Base):
     pass
 
 
-class Ltc(MyMixin, BaseModel):
+class Eos(MyMixin, Base):
     pass
 
 
-class Neo(MyMixin, BaseModel):
+class Etc(MyMixin, Base):
     pass
 
 
-class Qsh(MyMixin, BaseModel):
+class Eth(MyMixin, Base):
     pass
 
 
-class Qtm(MyMixin, BaseModel):
+class Fun(MyMixin, Base):
     pass
 
 
-class Omg(MyMixin, BaseModel):
+class Gnt(MyMixin, Base):
     pass
 
 
-class Rcn(MyMixin, BaseModel):
+class Icx(MyMixin, Base):
     pass
 
 
-class Rlc(MyMixin, BaseModel):
+class Iot(MyMixin, Base):
     pass
 
 
-class San(MyMixin, BaseModel):
+class Lsk(MyMixin, Base):
     pass
 
 
-class Spk(MyMixin, BaseModel):
+class Ltc(MyMixin, Base):
     pass
 
 
-class Trx(MyMixin, BaseModel):
+class Mana(MyMixin, Base):
     pass
 
 
-class Xlm(MyMixin, BaseModel):
+class Nano(MyMixin, Base):
     pass
 
 
-class Xmr(MyMixin, BaseModel):
+class Neo(MyMixin, Base):
     pass
 
 
-class Ada(MyMixin, BaseModel):
+class Omg(MyMixin, Base):
     pass
 
 
-class Xvg(MyMixin, BaseModel):
+class Ont(MyMixin, Base):
     pass
 
 
-class Xem(MyMixin, BaseModel):
+class Qsh(MyMixin, Base):
     pass
 
 
-class Ven(MyMixin, BaseModel):
+class Qtm(MyMixin, Base):
     pass
 
 
-class Bnb(MyMixin, BaseModel):
+class Rcn(MyMixin, Base):
     pass
 
 
-class Bcn(MyMixin, BaseModel):
+class Rlc(MyMixin, Base):
     pass
 
 
-class Icx(MyMixin, BaseModel):
+class San(MyMixin, Base):
     pass
 
 
-class Lsk(MyMixin, BaseModel):
+class Spk(MyMixin, Base):
     pass
 
 
-class Zil(MyMixin, BaseModel):
+class Steem(MyMixin, Base):
     pass
 
 
-class Ont(MyMixin, BaseModel):
+class Trx(MyMixin, Base):
     pass
 
 
-class Ae(MyMixin, BaseModel):
+class Ven(MyMixin, Base):
     pass
 
 
-class Zrx(MyMixin, BaseModel):
+class Waves(MyMixin, Base):
     pass
 
 
-class Dcr(MyMixin, BaseModel):
+class Xem(MyMixin, Base):
     pass
 
 
-class Nano(MyMixin, BaseModel):
+class Xlm(MyMixin, Base):
     pass
 
 
-class Waves(MyMixin, BaseModel):
+class Xmr(MyMixin, Base):
     pass
 
 
-class Xrp(MyMixin, BaseModel):
+class Xrp(MyMixin, Base):
     pass
 
 
-class Zec(MyMixin, BaseModel):
+class Xvg(MyMixin, Base):
     pass
 
 
-class Elf(MyMixin, BaseModel):
+class Zec(MyMixin, Base):
     pass
 
 
-class Steem(MyMixin, BaseModel):
+class Zil(MyMixin, Base):
     pass
 
 
-class Mana(MyMixin, BaseModel):
+class Zrx(MyMixin, Base):
     pass
 
 
-class Edo(MyMixin, BaseModel):
-    pass
-
-
-Compare_DB_Tables = {
-    'avt': Avt,
-    'ada': Ada,
-    'xvg': Xvg,
-    'xem': Xem,
-    'ven': Ven,
-    'bnb': Bnb,
-    'bcn': Bcn,
-    'icx': Icx,
-    'lsk': Lsk,
-    'zil': Zil,
-    'ont': Ont,
-    'ae': Ae,
-    'zrx': Zrx,
-    'dcr': Dcr,
-    'nano': Nano,
-    'waves': Waves,
-    'steem': Steem,
-    'rcn': Rcn,
-    'rlc': Rlc,
-    'elf': Elf,
-    'mana': Mana
+Binance_Tables = {
+    '15m': {
+        'bchsv': Bchsv
+    },
+    '1h': {
+    },
+    '3h': {
+    }
 }
 
-Bitfinex_DB_Tables = {
-    'bch': Bch,
-    'bab': Bab,
-    'btc': Btc,
-    'btg': Btg,
-    'dsh': Dsh,
-    'eos': Eos,
-    'etc': Etc,
-    'eth': Eth,
-    'fun': Fun,
-    'gnt': Gnt,
-    'iot': Iot,
-    'ltc': Ltc,
-    'neo': Neo,
-    'omg': Omg,
-    'qsh': Qsh,
-    'qtm': Qtm,
-    'san': San,
-    'spk': Spk,
-    'trx': Trx,
-    'xlm': Xlm,
-    'xmr': Xmr,
-    'xrp': Xrp,
-    'zec': Zec,
-    'edo': Edo
+CryptoCompare_Tables = {
+    '15m': {
+        'ada': Ada,
+        'bch': Bch,
+        'ae': Ae,
+        'bnb': Bnb,
+        'bcn': Bcn,
+        'icx': Icx,
+        'ont': Ont,
+        'omg': Omg,
+        'trx': Trx,
+        'xem': Xem,
+        'zil': Zil,
+        'zrx': Zrx
+    },
+    '1h': {
+        'dcr': Dcr,
+        'lsk': Lsk,
+        'nano': Nano,
+        'steem': Steem,
+        'ven': Ven,
+        'waves': Waves,
+        'xvg': Xvg
+    },
+    '3h': {
+        'mana': Mana
+    }
+}
+
+Bitfinex_Tables = {
+    '15m': {
+        'btc': Btc,
+        'bab': Bab,
+        'btg': Btg,
+        'dsh': Dsh,
+        'eos': Eos,
+        'etc': Etc,
+        'eth': Eth,
+        'iot': Iot,
+        'ltc': Ltc,
+        'neo': Neo,
+        'xlm': Xlm,
+        'xmr': Xmr,
+        'xrp': Xrp,
+        'zec': Zec
+    },
+    '1h': {
+        'edo': Edo,
+        'elf': Elf,
+        'gnt': Gnt,
+        'qsh': Qsh,
+        'qtm': Qtm,
+        'san': San
+    },
+    '3h': {
+        'avt': Avt,
+        'fun': Fun,
+        'rcn': Rcn,
+        'rlc': Rlc,
+        'spk': Spk
+    }
 }
 
 
 def all_DB_tables():
-    return {**Compare_DB_Tables, **Bitfinex_DB_Tables}
+    compare = {**CryptoCompare_Tables['15m'], **CryptoCompare_Tables['1h'], **CryptoCompare_Tables['3h']}
+    bitfinex = {**Bitfinex_Tables['15m'], **Bitfinex_Tables['1h'], **Bitfinex_Tables['3h']}
+    binance = {**Binance_Tables['15m'], **Binance_Tables['1h'], **Binance_Tables['3h']}
+    return {**compare, **bitfinex, **binance}
 
 
 def getTable(coin):
     return all_DB_tables()[coin]
+
+
+def delta_tables(delta):
+    return {**Bitfinex_Tables[delta], **CryptoCompare_Tables[delta], **Binance_Tables[delta]}

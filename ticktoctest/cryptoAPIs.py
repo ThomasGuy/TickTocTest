@@ -31,7 +31,7 @@ class CryptoAPI:
             # How many 'intervals' since last entry
             limit = int((datetime.utcnow() - query[0][0]).total_seconds() // self.interval[self.delta])
         if limit > self.maxLimit:
-            log.error(f'Bitfinex DB missing data:= {key} limit={limit} this has not been updated....')
+            log.error(f'DB chunk missing data:= {key} limit={limit} delta = {self.delta} this has not been updated')
             # limit = 0 we need to change delta to update this database table
             limit = -1
         return limit
@@ -61,6 +61,38 @@ class Bitfinex(CryptoAPI):
                     df = pd.DataFrame(data, columns=['MTS', 'Open', 'Close', 'High', 'Low', 'Volume'])
                     df['MTS'] = pd.to_datetime(df['MTS'], unit='ms')
                     df.set_index('MTS', drop=True, inplace=True)
+                except Error_429 as err:
+                    log.info(f'Bitfinex {key} 429 error {err.args}')
+                except Exception as err:
+                    log.error(f'BitfinexAPI {key} {err.args}')
+                self.updateDB(df, table, conn)
+        resp.close_session()
+
+
+class Binance(CryptoAPI):
+    """ Bitfinex API get lastest data chunk"""
+
+    endpoint = 'https://api.binance.com/api/v1/klines'
+    maxLimit = 1000
+
+    def __init__(self, DB_Tables, delta):
+        super().__init__(delta, self.maxLimit)
+        self.DB_Tables = DB_Tables
+
+    def chunk(self, session, conn):
+        resp = Return_API_response()
+        for key, table in self.DB_Tables.items():
+            limit = self._numRecords(key, table, session)
+            if limit > 0:
+                sym = key.upper() + 'USDT'
+                try:
+                    data = resp.api_response(self.endpoint + f'?symbol={sym}&interval={self.delta}&limit={limit}')
+                    df = pd.DataFrame(data, columns=['MTS', 'Open', 'High', 'Low', 'Close', 'Volume',
+                                                     'MTS_close', 'a', 'b', 'c', 'd', 'e'])
+                    df.drop(['MTS_close', 'a', 'b', 'c', 'd', 'e'], inplace=True, axis=1)
+                    df['MTS'] = pd.to_datetime(df['MTS'], unit='ms')
+                    df.set_index('MTS', drop=True, inplace=True)
+                    df = df[['Open', 'Close', 'High', 'Low', 'Volume']]
                 except Error_429 as err:
                     log.info(f'Bitfinex {key} 429 error {err.args}')
                 except Exception as err:
