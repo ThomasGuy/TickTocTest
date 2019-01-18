@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 
 Tables = all_DB_tables()
 # db_name = 'mysql+pymysql://TomRoot:Sporty66@mysql.stackcp.com:51228/ticktoctestDB-3637742e'
-db_name = f'sqlite:///c:\\data\\sqlite\\db\\master_db.db'
+master = f'sqlite:///c:\\data\\sqlite\\db\\master_db.db'
 
 
-def db_session(db_name=db_name):
+def db_session(db_name=master):
     """Returns the session"""
     engine = create_engine(db_name, pool_recycle=3000, echo=False)
     Session = scoped_session(sessionmaker(bind=engine))
@@ -31,19 +31,31 @@ def getDBdata(coin, step, session):
     db_ = getTable(coin)
     data = session.query(db_.MTS, db_.Open, db_.Close, db_.High, db_.Low, db_.Volume).all()
     df = pd.DataFrame(data)
+    df.sort_values('MTS', ascending=True)
     latest_timestamp = df['MTS'].max()
+    df.drop_duplicates()
+    df = df.groupby('MTS')['Open', 'Close', 'High', 'Low', 'Volume'].mean().reset_index()
     df.set_index('MTS', drop=True, inplace=True)
     base = latest_timestamp.hour + latest_timestamp.minute / 60.0
-    df.drop_duplicates()
-    df = df.groupby('MTS')['Open', 'Close', 'High', 'Low', 'Volume'].mean()
     resample_freq = step.upper()
-    return df.resample(rule=resample_freq, closed='right', label='right', base=base).agg({
-        'Open': 'first',
-        'Close': 'last',
-        'High': 'max',
-        'Low': 'min',
-        'Volume': 'sum'
+    return df.resample(rule=resample_freq, closed='right', label='right', base=base).agg(
+        {
+            'Open': 'first',
+            'Close': 'last',
+            'High': 'max',
+            'Low': 'min',
+            'Volume': 'sum'
         })
+
+
+def df_gen(tables, session):
+    for table in tables:
+        data = session.query(table.MTS, table.Open, table.Close, table.High, table.Low, table.Volume).all()
+        df = pd.DataFrame(data)
+        df.drop_duplicates()
+        df = df.groupby('MTS')['Open', 'Close', 'High', 'Low', 'Volume'].mean()
+        df.sort_values('MTS', ascending=True)
+        yield (table.__tablename__, df)
 
 
 def dfTables(session, DB_Tables=Tables):

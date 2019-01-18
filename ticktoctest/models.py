@@ -120,187 +120,187 @@ class MyMixin(object):
 
 
 class Ada(MyMixin, Base):
-    pass
+    name = 'Cardano (ADA)'
 
 
 class Ae(MyMixin, Base):
-    pass
+    name = 'Aeternity (AE)'
 
 
 class Avt(MyMixin, Base):
-    pass
+    name = 'Aventus (AVT)'
 
 
 class Bab(MyMixin, Base):
-    pass
+    name = 'Bitcoin Cash ABC (BAB)'
 
 
 class Bch(MyMixin, Base):
-    pass
+    name = 'Bitcoin Cash (BCH)'
 
 
 class Bchsv(MyMixin, Base):
-    pass
+    name = 'Bitcoin Cash SV (BCHSV)'
 
 
 class Bcn(MyMixin, Base):
-    pass
+    name = 'Bytecoin (BCN)'
 
 
 class Bnb(MyMixin, Base):
-    pass
+    name = 'Binance Coin (BNB)'
 
 
 class Btc(MyMixin, Base):
-    pass
+    name = 'Bitcoin (BTC)'
 
 
 class Btg(MyMixin, Base):
-    pass
+    name = 'Bitcoin Gold (BTG)'
 
 
 class Dcr(MyMixin, Base):
-    pass
+    name = 'Decred (DCR)'
 
 
 class Dsh(MyMixin, Base):
-    pass
+    name = 'Dash (DSH)'
 
 
 class Edo(MyMixin, Base):
-    pass
+    name = 'Eidoo (EDO)'
 
 
 class Elf(MyMixin, Base):
-    pass
+    name = 'aelf (ELF)'
 
 
 class Eos(MyMixin, Base):
-    pass
+    name = 'Eosio (EOS)'
 
 
 class Etc(MyMixin, Base):
-    pass
+    name = 'Ethereum Classic (ETC)'
 
 
 class Eth(MyMixin, Base):
-    pass
+    name = 'Ethereum (ETH)'
 
 
 class Fun(MyMixin, Base):
-    pass
+    name = 'FunFair (FUN)'
 
 
 class Gnt(MyMixin, Base):
-    pass
+    name = 'Golem (GNT)'
 
 
 class Icx(MyMixin, Base):
-    pass
+    name = 'ICON (ICX)'
 
 
 class Iot(MyMixin, Base):
-    pass
+    name = 'Iota (IOT)'
 
 
 class Lsk(MyMixin, Base):
-    pass
+    name = 'Lisk (LSK)'
 
 
 class Ltc(MyMixin, Base):
-    pass
+    name = 'Litecoin (LTC)'
 
 
 class Mana(MyMixin, Base):
-    pass
+    name = 'Decentraland (MANA)'
 
 
 class Nano(MyMixin, Base):
-    pass
+    name = 'Nano (NANO)'
 
 
 class Neo(MyMixin, Base):
-    pass
+    name = 'Neon (NEO)'
 
 
 class Omg(MyMixin, Base):
-    pass
+    name = 'Omisego (OMG)'
 
 
 class Ont(MyMixin, Base):
-    pass
+    name = 'Ontology (ONT)'
 
 
 class Qsh(MyMixin, Base):
-    pass
+    name = 'QASH (QSH)'
 
 
 class Qtm(MyMixin, Base):
-    pass
+    name = 'Qtum (QTM)'
 
 
 class Rcn(MyMixin, Base):
-    pass
+    name = 'Ripio Credit Network (RCN)'
 
 
 class Rlc(MyMixin, Base):
-    pass
+    name = 'iExec (RLC)'
 
 
 class San(MyMixin, Base):
-    pass
+    name = 'Santiment (SAN)'
 
 
 class Spk(MyMixin, Base):
-    pass
+    name = 'SpankChain (SPK)'
 
 
 class Steem(MyMixin, Base):
-    pass
+    name = 'Steem (STEEM)'
 
 
 class Trx(MyMixin, Base):
-    pass
+    name = 'Tron (TRX)'
 
 
 class Ven(MyMixin, Base):
-    pass
+    name = 'VeChain (VEN)'
 
 
 class Waves(MyMixin, Base):
-    pass
+    name = 'Waves (WAVES)'
 
 
 class Xem(MyMixin, Base):
-    pass
+    name = 'Xem (XEM)'
 
 
 class Xlm(MyMixin, Base):
-    pass
+    name = 'Stella Lumen (XLM)'
 
 
 class Xmr(MyMixin, Base):
-    pass
+    name = 'Monero (XMR)'
 
 
 class Xrp(MyMixin, Base):
-    pass
+    name = 'Ripple (XRP)'
 
 
 class Xvg(MyMixin, Base):
-    pass
+    name = 'Verge (XVG)'
 
 
 class Zec(MyMixin, Base):
-    pass
+    name = 'Zcash (ZEC)'
 
 
 class Zil(MyMixin, Base):
-    pass
+    name = 'Zilliqa (ZIL)'
 
 
 class Zrx(MyMixin, Base):
-    pass
+    name = 'Ox (ZRX)'
 
 
 Binance_Tables = {
